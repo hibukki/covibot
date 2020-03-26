@@ -13,6 +13,7 @@ SURVEY_URL = "https://coronaisrael.org/"
 QUESTION = "הגיע הזמן למלא את הסקר שיעזור לנו לנצח את הקורונה:"
 KEEP_GOING = "keep_going"
 
+exiting = False
 
 def start_how_are_you(update, context):
     try:
@@ -21,6 +22,10 @@ def start_how_are_you(update, context):
             return
     except KeyError:
         logging.warning(f"user_data doesn't contain key {KEEP_GOING}")
+        return
+
+    if exiting:
+        logging.info("Script is exiting, so aborting start_how_are_you")
         return
 
     context.bot.send_message(chat_id=update.effective_chat.id,
@@ -74,7 +79,7 @@ if __name__ == "__main__":
     INSTANCE_ID = os.environ["INSTANCE_ID"]
 
     # Set name of persistence data file
-    persistence_file = "data/persistence.pickle"
+    persistence_file = "persistence.pickle"
 
     # Define parser
     parser = argparse.ArgumentParser(description='JioBot Telegram Bot')
@@ -86,7 +91,7 @@ if __name__ == "__main__":
 
     # Parse args
     args = parser.parse_args()
-    logging.debug(f"Parsed arguments: {args}")
+    logging.info(f"Parsed arguments: {args}")
 
     # Create AWS S3 resource object
     s3 = boto3.resource('s3')
@@ -101,11 +106,11 @@ if __name__ == "__main__":
         if os.path.isfile(persistence_file):
             logging.info(f"File {persistence_file} was found!")
             os.remove(persistence_file)
-            logging.debug(f"Deleted {persistence_file}")
+            logging.info(f"Deleted {persistence_file}")
 
     # Check if persistence file exists
-    if not os.path.isfile(persistence_file):
-        logging.error(f"File {persistence_file} was not found!")
+    if True:  # not os.path.isfile(persistence_file):
+        logging.error(f"(doing as if) File {persistence_file} was not found!")
 
         # Warn that new file will be created
         if args.first_run:
@@ -114,7 +119,7 @@ if __name__ == "__main__":
         # Get file from AWS S3 if not first time
         else:
             s3.meta.client.download_file(INSTANCE_ID, persistence_file, persistence_file)
-            logging.debug(f"File {persistence_file} was successfully downloaded!")
+            logging.info(f"File {persistence_file} was successfully downloaded!")
 
     # Initialise persistence object
     pp = PicklePersistence(filename=persistence_file)
@@ -130,6 +135,7 @@ if __name__ == "__main__":
 
     logging.info(f"Listening for messages... Does persistence file exist? {os.path.isfile(persistence_file)}")
 
+    # Running on Heroku?
     if not args.local:
         # Start the webhook
         updater.start_webhook(listen="0.0.0.0",
@@ -137,16 +143,20 @@ if __name__ == "__main__":
                               url_path=TOKEN)
         updater.bot.setWebhook("https://{}.herokuapp.com/{}".format(NAME, TOKEN))
 
-
-
         # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
         # SIGTERM or SIGABRT
         updater.idle()
-    else:
+    else:  # Running locally
         updater.start_polling()
-        logging.info(f"Done start_polling")
+        logging.info(f"Running until interrupt...")
+        updater.idle()
+        exiting = True
+        logging.info(f"Exiting...")
 
-    # Backup latest file to AWS
-    logging.info(f"Uploading {persistence_file} to AWS S3.")
-    s3.meta.client.upload_file(persistence_file, INSTANCE_ID, persistence_file)
-    logging.debug(f"File {persistence_file} was successfully uploaded!")
+    if (os.path.isfile(persistence_file)):
+        # Backup latest file to AWS
+        logging.info(f"Uploading {persistence_file} to AWS S3.")
+        s3.meta.client.upload_file(persistence_file, INSTANCE_ID, persistence_file)
+        logging.info(f"File {persistence_file} was successfully uploaded!")
+    else:
+        logging.info(f"Didn't find pickle file {persistence_file} for uploading to AWS S3.")
