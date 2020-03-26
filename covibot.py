@@ -44,8 +44,9 @@ def stop(update, context):
     start_how_are_you(update, context)
 
 
-def echo(update, context):
-    logging.info("got echo")
+def help(update, context):
+    logging.info("got help")
+    context.bot.send_message(chat_id=update.effective_chat.id, text="I don't know that command. Try /start or /stop")
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
 
 
@@ -71,7 +72,8 @@ if __name__ == "__main__":
     dp = updater.dispatcher
     # Add handlers
     dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(MessageHandler(Filters.text, echo))
+    dp.add_handler(CommandHandler('stop', stop))
+    dp.add_handler(MessageHandler(Filters.text, help))
     dp.add_error_handler(error)
 
     # Start the webhook
@@ -80,14 +82,3 @@ if __name__ == "__main__":
                           url_path=TOKEN)
     updater.bot.setWebhook("https://{}.herokuapp.com/{}".format(NAME, TOKEN))
     updater.idle()
-
-# start_handler = CommandHandler('start', start)
-# dispatcher.add_handler(start_handler)
-#
-# caps_handler = CommandHandler('caps', caps)
-# dispatcher.add_handler(caps_handler)
-#
-# echo_handler = MessageHandler(Filters.text, echo)
-# dispatcher.add_handler(echo_handler)
-#
-# updater.start_polling()
