@@ -31,7 +31,7 @@ def start_how_are_you(update, context):
 def start(update, context):
     context.user_data[KEEP_GOING] = True
     context.bot.send_message(chat_id=update.effective_chat.id,
-                             text="This is a draft covid-19 questionair!")
+                             text="This is a draft covid-19 questionnaire!")
 
     start_how_are_you(update, context)
 
