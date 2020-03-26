@@ -1,12 +1,12 @@
 from telegram.ext import Updater
-import logger
+import logging
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 import threading
 import os
 
-logger.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                   level=logger.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                   level=logging.INFO)
 
 SURVEY_URL = "https://coronaisrael.org/"
 QUESTION = "הגיע הזמן למלא את הסקר שיעזור לנו לנצח את הקורונה:"
@@ -15,7 +15,7 @@ QUESTION = "הגיע הזמן למלא את הסקר שיעזור לנו לנצ�
 def start_how_are_you(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text=f"{QUESTION}\n{SURVEY_URL}")
-    logger.info("start_how_are_you")
+    logging.info("start_how_are_you")
     threading.Timer(10, start_how_are_you, [update, context]).start()
 
 
@@ -26,18 +26,18 @@ def start(update, context):
 
 
 def echo(update, context):
-    logger.info("got echo")
+    logging.info("got echo")
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
 
 
 def caps(update, context):
-    logger.info("got caps")
+    logging.info("got caps")
     text_caps = ' '.join(context.args).upper()
     context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
 
 
 def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"', update, error)
+    logging.warning('Update "%s" caused error "%s"', update, error)
 
 
 if __name__ == "__main__":
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     PORT = os.environ.get('PORT')
 
     # Set up the Updater
-    updater = Updater(TOKEN)
+    updater = Updater(TOKEN, use_context=True)
     dp = updater.dispatcher
     # Add handlers
     dp.add_handler(CommandHandler('start', start))
