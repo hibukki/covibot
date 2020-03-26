@@ -10,10 +10,16 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 SURVEY_URL = "https://coronaisrael.org/"
 QUESTION = "הגיע הזמן למלא את הסקר שיעזור לנו לנצח את הקורונה:"
+KEEP_GOING = "keep_going"
 
 
 def start_how_are_you(update, context):
-    if not context.chat_data["keep_going"]:
+    try:
+        should_keep_going = context.user_data[KEEP_GOING]
+        if not should_keep_going:
+            return
+    except KeyError:
+        logging.warning(f"user_data doesn't contain key {KEEP_GOING}")
         return
 
     context.bot.send_message(chat_id=update.effective_chat.id,
@@ -23,7 +29,7 @@ def start_how_are_you(update, context):
 
 
 def start(update, context):
-    context.chat_data = {"keep_going": True}
+    context.user_data[KEEP_GOING] = True
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text="This is a draft covid-19 questionair!")
 
@@ -31,7 +37,7 @@ def start(update, context):
 
 
 def stop(update, context):
-    context.chat_data = {"keep_going": False}
+    context.user_data[KEEP_GOING] = False
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text="Stopping the spam. To keep going, send /start")
 
