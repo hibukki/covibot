@@ -1,1 +1,1 @@
-web: python covibot.py
+web: python covibot.py --first-run
