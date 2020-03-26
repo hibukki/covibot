@@ -11,19 +11,33 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 SURVEY_URL = "https://coronaisrael.org/"
 QUESTION = "הגיע הזמן למלא את הסקר שיעזור לנו לנצח את הקורונה:"
 
+# A way to stop the bot from spamming. TODO: Stop it per-user. Also, make the periodic mechanism better
+keep_going = False
+
 
 def start_how_are_you(update, context):
+    if not keep_going:
+        return
+
     context.bot.send_message(chat_id=update.effective_chat.id,
-                             text=f"{QUESTION}\n{SURVEY_URL}")
+                             text=f"{QUESTION}\n{SURVEY_URL}. To stop, send: /stop")
     logging.info("start_how_are_you")
     threading.Timer(10, start_how_are_you, [update, context]).start()
 
 
 def start(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
+    keep_going = True
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text="This is a draft covid-19 questionair!")
 
     start_how_are_you(update, context)
 
+def stop(update, context):
+    keep_going = False
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text="Stopping the spam. To keep going, send /start")
+
+    start_how_are_you(update, context)
 
 def echo(update, context):
     logging.info("got echo")
