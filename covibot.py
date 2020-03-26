@@ -60,8 +60,8 @@ def caps(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
 
 
-def error(bot, update, error):
-    logging.warning('Update "%s" caused error "%s"', update, error)
+def error(bot, update, error_msg):
+    logging.warning('Update "%s" caused error "%s"', update, error_msg)
 
 
 if __name__ == "__main__":
@@ -82,6 +82,7 @@ if __name__ == "__main__":
     # Add optional argument
     parser.add_argument("--first-run", action="store_true", help="Initialise files for first run")
     parser.add_argument("--purge-data", action="store_true", help="Deletes any data files during initialisation")
+    parser.add_argument("--local", action="store_true", help="For running locally, not deployed to Heroku")
 
     # Parse args
     args = parser.parse_args()
@@ -127,17 +128,23 @@ if __name__ == "__main__":
     dp.add_handler(MessageHandler(Filters.text, help_command))
     dp.add_error_handler(error)
 
-    # Start the webhook
-    updater.start_webhook(listen="0.0.0.0",
-                          port=int(PORT),
-                          url_path=TOKEN)
-    updater.bot.setWebhook("https://{}.herokuapp.com/{}".format(NAME, TOKEN))
-
     logging.info(f"Listening for messages... Does persistence file exist? {os.path.isfile(persistence_file)}")
 
-    # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT
-    updater.idle()
+    if not args.local:
+        # Start the webhook
+        updater.start_webhook(listen="0.0.0.0",
+                              port=int(PORT),
+                              url_path=TOKEN)
+        updater.bot.setWebhook("https://{}.herokuapp.com/{}".format(NAME, TOKEN))
+
+
+
+        # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
+        # SIGTERM or SIGABRT
+        updater.idle()
+    else:
+        updater.start_polling()
+        logging.info(f"Done start_polling")
 
     # Backup latest file to AWS
     logging.info(f"Uploading {persistence_file} to AWS S3.")
