@@ -26,6 +26,9 @@ def start_how_are_you(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text=f"{QUESTION}\n{SURVEY_URL}.\nTo stop, send: /stop")
     logging.info("start_how_are_you")
+
+    # TODO: Use a job instead:
+    # https://github.com/python-telegram-bot/python-telegram-bot/blob/master/examples/timerbot.py
     threading.Timer(10, start_how_are_you, [update, context]).start()
 
 
@@ -129,6 +132,8 @@ if __name__ == "__main__":
                           port=int(PORT),
                           url_path=TOKEN)
     updater.bot.setWebhook("https://{}.herokuapp.com/{}".format(NAME, TOKEN))
+
+    logging.info(f"Listening for messages... Does persistence file exist? {os.path.isfile(persistence_file)}")
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT
