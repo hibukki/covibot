@@ -23,7 +23,7 @@ def start_how_are_you(update, context):
         return
 
     context.bot.send_message(chat_id=update.effective_chat.id,
-                             text=f"{QUESTION}\n{SURVEY_URL}. To stop, send: /stop")
+                             text=f"{QUESTION}\n{SURVEY_URL}.\nTo stop, send: /stop")
     logging.info("start_how_are_you")
     threading.Timer(10, start_how_are_you, [update, context]).start()
 
@@ -44,7 +44,7 @@ def stop(update, context):
     start_how_are_you(update, context)
 
 
-def help(update, context):
+def help_command(update, context):
     logging.info("got help")
     context.bot.send_message(chat_id=update.effective_chat.id, text="I don't know that command. Try /start or /stop")
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # Add handlers
     dp.add_handler(CommandHandler('start', start))
     dp.add_handler(CommandHandler('stop', stop))
-    dp.add_handler(MessageHandler(Filters.text, help))
+    dp.add_handler(MessageHandler(Filters.text, help_command))
     dp.add_error_handler(error)
 
     # Start the webhook
