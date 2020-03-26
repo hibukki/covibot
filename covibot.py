@@ -6,17 +6,14 @@ import threading
 import os
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                   level=logging.INFO)
+                    level=logging.INFO)
 
 SURVEY_URL = "https://coronaisrael.org/"
 QUESTION = "הגיע הזמן למלא את הסקר שיעזור לנו לנצח את הקורונה:"
 
-# A way to stop the bot from spamming. TODO: Stop it per-user. Also, make the periodic mechanism better
-keep_going = False
-
 
 def start_how_are_you(update, context):
-    if not keep_going:
+    if not context.chat_data["keep_going"]:
         return
 
     context.bot.send_message(chat_id=update.effective_chat.id,
@@ -26,18 +23,20 @@ def start_how_are_you(update, context):
 
 
 def start(update, context):
-    keep_going = True
+    context.chat_data = {"keep_going": True}
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text="This is a draft covid-19 questionair!")
 
     start_how_are_you(update, context)
 
+
 def stop(update, context):
-    keep_going = False
+    context.chat_data = {"keep_going": False}
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text="Stopping the spam. To keep going, send /start")
 
     start_how_are_you(update, context)
+
 
 def echo(update, context):
     logging.info("got echo")
