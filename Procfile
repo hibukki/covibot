@@ -1,1 +1,1 @@
-web: python covibot.py
+web: python manage.py telegram-bot
