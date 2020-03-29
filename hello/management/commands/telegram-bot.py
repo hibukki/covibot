@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand, CommandError
 from telegram.ext import Updater
 import logging
 from telegram.ext import MessageHandler, Filters, CommandHandler
-import threading
 import os
 from hello.models import Chats
 
@@ -11,13 +10,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 SURVEY_URL = "https://coronaisrael.org/"
 QUESTION = "הגיע הזמן למלא את הסקר שיעזור לנו לנצח את הקורונה:"
-KEEP_GOING = "keep_going"
-
-exiting = False
 
 
 def start(update, context):
-    context.user_data[KEEP_GOING] = True
     chat_id = update.effective_chat.id
     Chats.objects.update_or_create(chat_id=chat_id, user_requested_stop=False)
     context.bot.send_message(chat_id=chat_id,
@@ -25,7 +20,6 @@ def start(update, context):
 
 
 def stop(update, context):
-    context.user_data[KEEP_GOING] = False
     chat_id = update.effective_chat.id
 
     # Set (user_requested_stop = True). TODO: Can this be done as one command that doesn't read from the DB first?
@@ -94,5 +88,4 @@ class Command(BaseCommand):
             updater.start_polling()
             logging.info(f"Running until interrupt...")
             updater.idle()
-            exiting = True
             logging.info(f"Exiting...")
