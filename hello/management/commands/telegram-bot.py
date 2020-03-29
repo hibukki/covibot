@@ -32,8 +32,8 @@ def help_command(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I don't know that command. Try /start or /stop")
 
 
-def error_handler(update, error_msg):
-    logging.warning('Update "%s" caused error "%s"', update, error_msg)
+def bot_error_handler(update, context):
+    logging.warning('Update "%s" caused error "%s"', update, context.error)
 
 
 class Command(BaseCommand):
@@ -58,7 +58,7 @@ class Command(BaseCommand):
         dp.add_handler(CommandHandler('start', start))
         dp.add_handler(CommandHandler('stop', stop))
         dp.add_handler(MessageHandler(Filters.text, help_command))
-        dp.add_error_handler(error_handler)
+        dp.add_error_handler(bot_error_handler)
 
         # Running on Heroku?
         if not options['local']:
