@@ -41,7 +41,7 @@ def start_how_are_you(update, context):
 def start(update, context):
     context.user_data[KEEP_GOING] = True
     chat_id = update.effective_chat.id
-    Chats.objects.create(chat_id=chat_id)
+    Chats.objects.update_or_create(chat_id=chat_id, user_requested_stop=False)
     context.bot.send_message(chat_id=chat_id,
                              text="נרשמת למערכת בהצלחה, מעכשיו תקבל עדכונים יומיים")
 
@@ -50,10 +50,15 @@ def start(update, context):
 
 def stop(update, context):
     context.user_data[KEEP_GOING] = False
-    context.bot.send_message(chat_id=update.effective_chat.id,
-                             text="Stopping the spam. To keep going, send /start")
+    chat_id = update.effective_chat.id
 
-    start_how_are_you(update, context)
+    # Set (user_requested_stop = True). TODO: Can this be done as one command that doesn't read from the DB first?
+    chat = Chats.objects.get(chat_id=chat_id)
+    chat.user_requested_stop = True
+    chat.save()
+
+    context.bot.send_message(chat_id=chat_id,
+                             text="Stopping the spam. To keep going, send /start")
 
 
 def help_command(update, context):
@@ -68,7 +73,7 @@ def caps(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
 
 
-def error(bot, update, error_msg):
+def error_handler(update, error_msg):
     logging.warning('Update "%s" caused error "%s"', update, error_msg)
 
 
@@ -96,7 +101,7 @@ class Command(BaseCommand):
         dp.add_handler(CommandHandler('start', start))
         dp.add_handler(CommandHandler('stop', stop))
         dp.add_handler(MessageHandler(Filters.text, help_command))
-        dp.add_error_handler(error)
+        dp.add_error_handler(error_handler)
 
         # Running on Heroku?
         if not options['local']:
