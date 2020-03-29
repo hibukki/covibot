@@ -16,36 +16,12 @@ KEEP_GOING = "keep_going"
 exiting = False
 
 
-def start_how_are_you(update, context):
-    try:
-        should_keep_going = context.user_data[KEEP_GOING]
-        if not should_keep_going:
-            return
-    except KeyError:
-        logging.warning(f"user_data doesn't contain key {KEEP_GOING}")
-        return
-
-    if exiting:
-        logging.info("Script is exiting, so aborting start_how_are_you")
-        return
-
-    context.bot.send_message(chat_id=update.effective_chat.id,
-                             text=f"{QUESTION}\n{SURVEY_URL}.\nTo stop, send: /stop")
-    logging.info("start_how_are_you")
-
-    # TODO: Use a job instead:
-    # https://github.com/python-telegram-bot/python-telegram-bot/blob/master/examples/timerbot.py
-    threading.Timer(10, start_how_are_you, [update, context]).start()
-
-
 def start(update, context):
     context.user_data[KEEP_GOING] = True
     chat_id = update.effective_chat.id
     Chats.objects.update_or_create(chat_id=chat_id, user_requested_stop=False)
     context.bot.send_message(chat_id=chat_id,
                              text="נרשמת למערכת בהצלחה, מעכשיו תקבל עדכונים יומיים")
-
-    start_how_are_you(update, context)
 
 
 def stop(update, context):
