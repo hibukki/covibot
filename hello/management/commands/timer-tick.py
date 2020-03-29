@@ -25,6 +25,6 @@ class Command(BaseCommand):
         # Set up the Updater
         updater = Updater(TOKEN, use_context=True)
 
-        for chat in Chats.objects.all():
+        for chat in Chats.objects.filter(user_requested_stop=False).all():
             updater.bot.send_message(chat_id=chat.chat_id,
                                      text=f"{QUESTION}\n{SURVEY_URL}.\n\nTo stop, send: /stop")
