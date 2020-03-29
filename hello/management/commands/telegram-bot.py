@@ -3,34 +3,35 @@ from telegram.ext import Updater
 import logging
 from telegram.ext import MessageHandler, Filters, CommandHandler
 import os
+
+from hello.common import get_env_message
 from hello.models import Chats
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
-WELCOME_MESSAGE = os.environ.get('MESSAGE_WELCOME')
 
-
-def start(update, context):
+def start_message_handler(update, context):
     chat_id = update.effective_chat.id
     Chats.objects.update_or_create(chat_id=chat_id, user_requested_stop=True)
 
     context.bot.send_message(chat_id=chat_id,
-                             text=WELCOME_MESSAGE)
+                             text=get_env_message('MESSAGE_WELCOME'))
 
 
-def stop(update, context):
+def stop_message_handler(update, context):
     chat_id = update.effective_chat.id
 
     Chats.objects.update_or_create(chat_id=chat_id, user_requested_stop=True)
 
     context.bot.send_message(chat_id=chat_id,
-                             text="Stopping the spam. To keep going, send /start")
+                             text=get_env_message('MESSAGE_STOPPED'))
 
 
-def help_command(update, context):
+def unknown_command_handler(update, context):
     logging.info("got help")
-    context.bot.send_message(chat_id=update.effective_chat.id, text="I don't know that command. Try /start or /stop")
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text=get_env_message('MESSAGE_UNKNOWN_COMMAND'))
 
 
 def bot_error_handler(update, context):
@@ -56,9 +57,9 @@ class Command(BaseCommand):
         updater = Updater(TOKEN, use_context=True)
         dp = updater.dispatcher
         # Add handlers
-        dp.add_handler(CommandHandler('start', start))
-        dp.add_handler(CommandHandler('stop', stop))
-        dp.add_handler(MessageHandler(Filters.text, help_command))
+        dp.add_handler(CommandHandler('start', start_message_handler))
+        dp.add_handler(CommandHandler('stop', stop_message_handler))
+        dp.add_handler(MessageHandler(Filters.text, unknown_command_handler))
         dp.add_error_handler(bot_error_handler)
 
         # Running on Heroku?
