@@ -1,10 +1,9 @@
 from django.core.management.base import BaseCommand, CommandError
 from telegram.ext import Updater
 import logging
-from telegram.ext import MessageHandler, Filters, PicklePersistence, CommandHandler
+from telegram.ext import MessageHandler, Filters, CommandHandler
 import threading
 import os
-import boto3
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -87,62 +86,14 @@ class Command(BaseCommand):
         # Port is given by Heroku
         PORT = os.environ.get('PORT')
 
-        INSTANCE_ID = os.environ["INSTANCE_ID"]
-
-        # Set name of persistence data file
-        persistence_file = "persistence.pickle"
-
-        # Define parser
-        # parser = argparse.ArgumentParser(description='JioBot Telegram Bot')
-
-        # Add optional argument
-
-        # Parse args
-        # args = parser.parse_args()
-        logging.info(f"Parsed arguments: {options}")
-
-        # Create AWS S3 resource object
-        s3 = boto3.resource('s3')
-
-        # Removes local copy of persistence file if desired
-        if options['purge_data']:
-            logging.warning(
-                f"Local persistence file will be deleted (if it even exists) since --purge-data={options['purge_data']}")
-
-            # Remove file
-            logging.info(f"Checking for existence of {persistence_file}")
-            if os.path.isfile(persistence_file):
-                logging.info(f"File {persistence_file} was found!")
-                os.remove(persistence_file)
-                logging.info(f"Deleted {persistence_file}")
-
-        # Check if persistence file exists
-        if True:  # not os.path.isfile(persistence_file):
-            logging.error(f"(doing as if) File {persistence_file} was not found!")
-
-            # Warn that new file will be created
-            if options['first_run']:
-                logging.warning(
-                    f"File {persistence_file} will be newly created since --first-run={options['first_run']}")
-
-            # Get file from AWS S3 if not first time
-            else:
-                s3.meta.client.download_file(INSTANCE_ID, persistence_file, persistence_file)
-                logging.info(f"File {persistence_file} was successfully downloaded!")
-
-        # Initialise persistence object
-        pp = PicklePersistence(filename=persistence_file)
-
         # Set up the Updater
-        updater = Updater(TOKEN, persistence=pp, use_context=True)
+        updater = Updater(TOKEN, use_context=True)
         dp = updater.dispatcher
         # Add handlers
         dp.add_handler(CommandHandler('start', start))
         dp.add_handler(CommandHandler('stop', stop))
         dp.add_handler(MessageHandler(Filters.text, help_command))
         dp.add_error_handler(error)
-
-        logging.info(f"Listening for messages... Does persistence file exist? {os.path.isfile(persistence_file)}")
 
         # Running on Heroku?
         if not options['local']:
@@ -161,11 +112,3 @@ class Command(BaseCommand):
             updater.idle()
             exiting = True
             logging.info(f"Exiting...")
-
-        if (os.path.isfile(persistence_file)):
-            # Backup latest file to AWS
-            logging.info(f"Uploading {persistence_file} to AWS S3.")
-            s3.meta.client.upload_file(persistence_file, INSTANCE_ID, persistence_file)
-            logging.info(f"File {persistence_file} was successfully uploaded!")
-        else:
-            logging.info(f"Didn't find pickle file {persistence_file} for uploading to AWS S3.")
