@@ -13,7 +13,7 @@ WELCOME_MESSAGE = os.environ.get('MESSAGE_WELCOME')
 
 def start(update, context):
     chat_id = update.effective_chat.id
-    Chats.objects.filter(chat_id=chat_id).update(user_requested_stop=False)
+    Chats.objects.update_or_create(chat_id=chat_id, user_requested_stop=True)
 
     context.bot.send_message(chat_id=chat_id,
                              text=WELCOME_MESSAGE)
