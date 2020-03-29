@@ -30,13 +30,6 @@ def stop(update, context):
 def help_command(update, context):
     logging.info("got help")
     context.bot.send_message(chat_id=update.effective_chat.id, text="I don't know that command. Try /start or /stop")
-    context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
-
-
-def caps(update, context):
-    logging.info("got caps")
-    text_caps = ' '.join(context.args).upper()
-    context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
 
 
 def error_handler(update, error_msg):
