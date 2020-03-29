@@ -7,7 +7,7 @@ from hello.models import Chats
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
-REMINDER_MESSAGE = os.environ.get('MESSAGE_REMINDER')
+REMINDER_MESSAGE = os.environ.get('MESSAGE_REMINDER').replace("\\n", '\n')
 
 
 class Command(BaseCommand):
