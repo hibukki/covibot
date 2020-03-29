@@ -21,10 +21,7 @@ def start(update, context):
 def stop(update, context):
     chat_id = update.effective_chat.id
 
-    # Set (user_requested_stop = True). TODO: Can this be done as one command that doesn't read from the DB first?
-    chat = Chats.objects.get(chat_id=chat_id)
-    chat.user_requested_stop = True
-    chat.save()
+    Chats.objects.update_or_create(chat_id=chat_id, user_requested_stop=True)
 
     context.bot.send_message(chat_id=chat_id,
                              text="Stopping the spam. To keep going, send /start")
