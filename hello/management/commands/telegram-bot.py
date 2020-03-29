@@ -40,8 +40,6 @@ class Command(BaseCommand):
     help = 'Runs the telegram bot'
 
     def add_arguments(self, parser):
-        parser.add_argument("--first-run", action="store_true", help="Initialise files for first run")
-        parser.add_argument("--purge-data", action="store_true", help="Deletes any data files during initialisation")
         parser.add_argument("--local", action="store_true", help="For running locally, not deployed to Heroku")
 
     def handle(self, *args, **options):
