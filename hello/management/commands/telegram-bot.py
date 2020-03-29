@@ -8,15 +8,14 @@ from hello.models import Chats
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
-SURVEY_URL = "https://coronaisrael.org/"
-QUESTION = "הגיע הזמן למלא את הסקר שיעזור לנו לנצח את הקורונה:"
+WELCOME_MESSAGE = os.environ.get('MESSAGE_WELCOME')
 
 
 def start(update, context):
     chat_id = update.effective_chat.id
     Chats.objects.update_or_create(chat_id=chat_id, user_requested_stop=False)
     context.bot.send_message(chat_id=chat_id,
-                             text="נרשמת למערכת בהצלחה, מעכשיו תקבל עדכונים יומיים")
+                             text=WELCOME_MESSAGE)
 
 
 def stop(update, context):
