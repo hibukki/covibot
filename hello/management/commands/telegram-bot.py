@@ -4,6 +4,7 @@ import logging
 from telegram.ext import MessageHandler, Filters, CommandHandler
 import threading
 import os
+from hello.models import Chats
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -39,8 +40,10 @@ def start_how_are_you(update, context):
 
 def start(update, context):
     context.user_data[KEEP_GOING] = True
-    context.bot.send_message(chat_id=update.effective_chat.id,
-                             text="This is a draft covid-19 questionnaire!")
+    chat_id = update.effective_chat.id
+    Chats.objects.create(chat_id=chat_id)
+    context.bot.send_message(chat_id=chat_id,
+                             text="נרשמת למערכת בהצלחה, מעכשיו תקבל עדכונים יומיים")
 
     start_how_are_you(update, context)
 
@@ -78,7 +81,7 @@ class Command(BaseCommand):
         parser.add_argument("--local", action="store_true", help="For running locally, not deployed to Heroku")
 
     def handle(self, *args, **options):
-        self.stdout.write("Running a management command, OMG!")
+        self.stdout.write("Running a management command, OMG! 2")
         # if __name__ == "__main__":
         TOKEN = os.environ.get('TELEGRAM_TOKEN')
         NAME = "covibot"  # App name on Heroku
