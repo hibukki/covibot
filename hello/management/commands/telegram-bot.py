@@ -13,7 +13,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 def start_message_handler(update, context):
     chat_id = update.effective_chat.id
-    Chats.objects.update_or_create(chat_id=chat_id, user_requested_stop=True)
+    Chats.objects.update_or_create(chat_id=chat_id, defaults={"user_requested_stop": False})
 
     context.bot.send_message(chat_id=chat_id,
                              text=get_env_message('MESSAGE_WELCOME'))
