@@ -21,5 +21,8 @@ class Command(BaseCommand):
         updater = Updater(TOKEN, use_context=True)
 
         for chat in Chats.objects.filter(user_requested_stop=False).all():
+            self.stdout.write(f"Sending to chat: {chat}")
             updater.bot.send_message(chat_id=chat.chat_id,
                                      text=get_env_message('MESSAGE_REMINDER'))
+
+        self.stdout.write(f"Done. Skipped: {Chats.objects.filter(user_requested_stop=True).count()}")
