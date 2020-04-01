@@ -53,10 +53,9 @@ button_list = [
 reply_markup = InlineKeyboardMarkup(build_menu(button_list, n_cols=2))
 
 
-
 def start_message_handler(update, context):
     chat_id = update.effective_chat.id
-    Chats.objects.update_or_create(chat_id=chat_id, defaults={"user_requested_stop": False})
+    Chats.objects.update_or_create(chat_id=chat_id, defaults={'user_requested_stop': False})
 
     context.bot.send_message(chat_id=chat_id,
                              text=get_env_message('MESSAGE_WELCOME'))
@@ -156,12 +155,11 @@ def choose_hour(update, context):
                             )
 
     chat_id = update.effective_chat.id
-    Chats.objects.update_or_create(chat_id=chat_id, defaults={"user_requested_stop": True})
 
     requested_reminder_time = datetime.time(selected_hour, 0, 0)
     logging.info(f"Setting time to {requested_reminder_time}")
-    Chats.objects.filter(chat_id=chat_id).update(requested_reminder_time=requested_reminder_time)
 
+    Chats.objects.filter(chat_id=chat_id).update(requested_reminder_time=requested_reminder_time)
 
 
 class Command(BaseCommand):
