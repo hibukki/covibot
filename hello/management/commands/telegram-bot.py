@@ -1,3 +1,5 @@
+import datetime
+
 from django.core.management.base import BaseCommand, CommandError
 from telegram import ReplyKeyboardMarkup, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, ConversationHandler, CallbackQueryHandler
@@ -51,6 +53,7 @@ button_list = [
 reply_markup = InlineKeyboardMarkup(build_menu(button_list, n_cols=2))
 
 
+
 def start_message_handler(update, context):
     chat_id = update.effective_chat.id
     Chats.objects.update_or_create(chat_id=chat_id, defaults={"user_requested_stop": False})
@@ -87,7 +90,7 @@ def hour(update, context):
 def stop_message_handler(update, context):
     chat_id = update.effective_chat.id
 
-    Chats.objects.update_or_create(chat_id=chat_id, user_requested_stop=True)
+    Chats.objects.update_or_create(chat_id=chat_id, defaults={"user_requested_stop": True})
 
     context.bot.send_message(chat_id=chat_id,
                              text=get_env_message('MESSAGE_STOPPED'))
@@ -118,7 +121,7 @@ def change_hour(update, context):
 
 
 def menu_choice(update, context):
-    logging.warning(f"menu_choice called, {update}, {context}")
+    logging.info(f"menu_choice called")
     query = update.callback_query
     command = query.data
     if command == 'cancel':
@@ -141,7 +144,7 @@ def set_user_updates(user, chat_id, hour):
 
 def choose_hour(update, context):
     query = update.callback_query
-    selected_hour = query.data
+    selected_hour = int(query.data)
     user = query.message.from_user
     chat_id = query.message.chat_id
     set_user_updates(user, chat_id, hour)
@@ -151,6 +154,14 @@ def choose_hour(update, context):
                             parse_mode=ParseMode.MARKDOWN,
                             # reply_markup=inline_menu
                             )
+
+    chat_id = update.effective_chat.id
+    Chats.objects.update_or_create(chat_id=chat_id, defaults={"user_requested_stop": True})
+
+    requested_reminder_time = datetime.time(selected_hour, 0, 0)
+    logging.info(f"Setting time to {requested_reminder_time}")
+    Chats.objects.filter(chat_id=chat_id).update(requested_reminder_time=requested_reminder_time)
+
 
 
 class Command(BaseCommand):
